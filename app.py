@@ -110,9 +110,32 @@ st.sidebar.caption(
 
 st.title("📈 Stock Price Prediction Research Dashboard")
 
+st.markdown("""
+<div style="text-align: center; line-height: 1.7;">
+
+<h4>BSc Financial Engineering</h4>
+
+<p>
+Department of Mathematics<br>
+Faculty of Science<br>
+University of Colombo
+</p>
+
+<h4>Final Year Project</h4>
+
+<p>
+<strong>Bimalya Herath</strong> (24sfe037)<br>
+<strong>Tharuka Hewawasam</strong> (24sfe031)
+</p>
+
+<hr>
+
+</div>
+""", unsafe_allow_html=True)
+
 st.caption(
-    "Comparative analysis of machine learning and "
-    "deep learning models for AAPL, MSFT and TSLA."
+    "Comparative analysis of machine learning and deep learning models "
+    "for AAPL, MSFT and TSLA."
 )
 
 # --------------------------------------------------
