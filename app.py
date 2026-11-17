@@ -305,13 +305,20 @@ elif page == "Our research":
     end_date = prices["Date"].max()
     st.markdown("### What period does the supplied dataset cover?")
     st.write(f"The historical price file contains observations from **{start_date:%d %B %Y} to {end_date:%d %B %Y}**.")
-    st.warning("The CSV outputs do not identify the original data vendor or fully specify the model settings and data-splitting procedure. Those details should be taken from the approved research methodology/report, not guessed.")
+    st.info(
+        "**A note about our research data**  \n\n"
+        "The historical stock price data used in this research was obtained from **Yahoo Finance**. "
+        "The dataset includes historical prices for Apple (AAPL), Microsoft (MSFT) and Tesla (TSLA). "
+        "Additional technical details about model configurations and the training, validation and "
+        "testing procedures are provided in our research methodology."
+    )
 
 # ==========================================================
 # PAGE 4 — DATA EXPLORER
 # ==========================================================
 elif page == "Explore the companies":
     heading("GET TO KNOW THE DATA", "Explore the three companies", "Choose a company and explore the historical prices and daily movements used in the research.")
+    st.caption("Historical stock-price data source: Yahoo Finance.")
     ticker = choose_stock("explore_ticker")
     series = stock_prices(ticker)
     latest = series.iloc[-1]
@@ -451,6 +458,7 @@ elif page == "What we discovered":
 # ==========================================================
 elif page == "Research data":
     heading("FOR ACADEMIC REVIEW", "Research data and technical details", "Inspect the supplied output tables and download the main results for further review.")
+    st.caption("Historical stock-price data source: Yahoo Finance.")
     overview = []
     for ticker in available_stocks:
         s = stock_prices(ticker)
