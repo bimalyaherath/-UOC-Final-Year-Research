@@ -4,159 +4,109 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-# ==========================================================
-# 1. PAGE CONFIGURATION
-# ==========================================================
+
+# ============================================================
+# PAGE CONFIGURATION
+# ============================================================
 
 st.set_page_config(
-    page_title="Stock Market Prediction Research",
-    page_icon="",
-    layout="wide"
+    page_title="Stock Price Prediction | Final Year Research",
+    page_icon="📈",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 
-# ==========================================================
-# 2. DESIGN
-# ==========================================================
+# ============================================================
+# BASIC STYLING
+# ============================================================
 
 st.markdown("""
 <style>
 
     .main {
-        background-color: #F8FAFC;
+        background-color: #ffffff;
     }
 
     .block-container {
-        max-width: 1450px;
+        max-width: 1400px;
         padding-top: 2rem;
         padding-bottom: 3rem;
     }
 
     h1 {
-        color: #17365D;
-        font-weight: 700;
+        font-weight: 650;
+        color: #1f2937;
+        letter-spacing: -0.5px;
     }
 
-    h2, h3 {
-        color: #24476B;
+    h2 {
+        color: #1f2937;
+        margin-top: 1.5rem;
+    }
+
+    h3 {
+        color: #374151;
     }
 
     p {
-        line-height: 1.7;
-    }
-
-    .intro-box {
-        background-color: #EDF3F8;
-        padding: 24px;
-        border-radius: 8px;
-        border-left: 4px solid #315D83;
-        margin: 15px 0 25px 0;
-    }
-
-    .finding-box {
-        background-color: #FFFFFF;
-        padding: 20px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        margin-bottom: 15px;
+        color: #374151;
+        line-height: 1.65;
     }
 
     .research-box {
-        background-color: #FFFFFF;
-        padding: 22px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        margin-bottom: 15px;
+        background-color: #f5f7fa;
+        border-left: 4px solid #374151;
+        padding: 1.2rem 1.4rem;
+        margin: 1rem 0 1.5rem 0;
+        border-radius: 4px;
     }
 
-    .muted {
-        color: #64748B;
-        font-size: 14px;
+    .finding-box {
+        background-color: #f3f7f4;
+        border-left: 4px solid #4b6b57;
+        padding: 1.3rem 1.5rem;
+        margin: 1rem 0 1.5rem 0;
+        border-radius: 4px;
     }
 
-    div[data-testid="stMetric"] {
-        background-color: white;
-        padding: 18px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
+    .warning-box {
+        background-color: #faf8f2;
+        border-left: 4px solid #8a7650;
+        padding: 1.2rem 1.4rem;
+        margin: 1rem 0 1.5rem 0;
+        border-radius: 4px;
     }
 
-    div[data-testid="stMetricLabel"] {
-        color: #64748B;
+    .student-name {
+        font-size: 1rem;
+        color: #4b5563;
+        line-height: 1.8;
     }
 
-    hr {
-        border-color: #E2E8F0;
+    .section-description {
+        color: #6b7280;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .metric-label {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+    .sidebar-title {
+        font-size: 1.15rem;
+        font-weight: 600;
     }
 
 </style>
 """, unsafe_allow_html=True)
 
 
-# ==========================================================
-# 3. RESEARCH INFORMATION
-# ==========================================================
-
-PROJECT_TITLE = (
-    "Stock Market Price Prediction "
-    "for Data-Driven Decision Support"
-)
-
-STOCKS = ["AAPL", "MSFT", "TSLA"]
-
-STOCK_NAMES = {
-    "AAPL": "Apple",
-    "MSFT": "Microsoft",
-    "TSLA": "Tesla"
-}
-
-MODELS = [
-    "Naive Baseline",
-    "Random Forest",
-    "XGBoost",
-    "SVR",
-    "LSTM",
-    "GRU",
-    "Transformer"
-]
-
-MODEL_DESCRIPTIONS = {
-
-    "Naive Baseline":
-    "Uses the most recently observed price as the next "
-    "price estimate. It provides a simple benchmark "
-    "against which more advanced approaches are compared.",
-
-    "Random Forest":
-    "Combines multiple decision trees to estimate "
-    "stock prices using patterns in the available data.",
-
-    "XGBoost":
-    "Uses a sequence of decision trees to improve "
-    "prediction performance.",
-
-    "SVR":
-    "Uses Support Vector Regression to estimate "
-    "stock prices based on relationships in the data.",
-
-    "LSTM":
-    "A type of recurrent neural network designed to "
-    "learn patterns from sequential information.",
-
-    "GRU":
-    "A recurrent neural network that learns relationships "
-    "in sequential data using a simplified gating structure.",
-
-    "Transformer":
-    "Uses attention mechanisms to learn relationships "
-    "between different parts of sequential data."
-
-}
-
-
-# ==========================================================
-# 4. LOAD RESEARCH DATA
-# ==========================================================
+# ============================================================
+# DATA
+# ============================================================
 
 DATA_DIR = "research_outputs"
 
@@ -224,1164 +174,253 @@ try:
 except FileNotFoundError:
 
     st.error(
-        "Research data files are missing. "
-        "Please check the research_outputs folder."
+        "The research data files could not be found. "
+        "Please make sure the 'research_outputs' folder "
+        "contains all required CSV files."
     )
 
     st.stop()
 
 
-# ==========================================================
-# 5. HELPER FUNCTIONS
-# ==========================================================
+# ============================================================
+# GENERAL SETTINGS
+# ============================================================
 
-def get_stock_name(stock):
+STOCKS = ["AAPL", "MSFT", "TSLA"]
 
-    return STOCK_NAMES.get(stock, stock)
-
-
-def get_best_model(stock):
-
-    result = best_models[
-        best_models["Stock"] == stock
-    ]
-
-    if result.empty:
-        return None
-
-    return result.iloc[0]["Model"]
+STOCK_NAMES = {
+    "AAPL": "Apple",
+    "MSFT": "Microsoft",
+    "TSLA": "Tesla"
+}
 
 
-def get_model_results(stock):
+# ============================================================
+# SIDEBAR
+# ============================================================
 
-    result = comparison[
-        comparison["Stock"] == stock
-    ].copy()
-
-    return result.sort_values("RMSE")
-
-
-def format_date(date):
-
-    return pd.to_datetime(date).strftime("%d %B %Y")
-
-
-# ==========================================================
-# 6. SIDEBAR
-# ==========================================================
-
-st.sidebar.title("Research Dashboard")
+st.sidebar.markdown(
+    '<div class="sidebar-title">Stock Price Prediction Research</div>',
+    unsafe_allow_html=True
+)
 
 st.sidebar.caption(
-    "Stock Market Price Prediction"
+    "Final Year Research Project"
 )
 
 st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
-
-    "Navigation",
-
+    "Navigate",
     [
-        "Home",
-        "Explore the Market",
-        "Our Predictions",
-        "How Accurate Were We?",
-        "What Did We Discover?",
-        "About This Research"
+        "Overview",
+        "The Data",
+        "What We Tested",
+        "Results",
+        "Stock Behaviour",
+        "Research Conclusion"
     ]
-
 )
 
 st.sidebar.markdown("---")
 
 st.sidebar.caption(
-    "BSc Financial Engineering"
-)
-
-st.sidebar.caption(
+    "BSc Financial Engineering\n"
+    "Department of Mathematics\n"
+    "Faculty of Science\n"
     "University of Colombo"
 )
 
 
-# ==========================================================
-# 7. MAIN HEADER
-# ==========================================================
+# ============================================================
+# OVERVIEW
+# ============================================================
 
-st.title("Stock Market Prediction Research")
+if page == "Overview":
 
-st.markdown(
-    """
-    A comparative study of machine learning and deep learning
-    approaches for stock price prediction.
-    """
-)
+    st.title("Stock Price Prediction for Data-Driven Decision Support")
 
-st.markdown("---")
-
-
-# ==========================================================
-# 8. HOME PAGE
-# ==========================================================
-
-if page == "Home":
-
-    st.header("Understanding Stock Price Predictions")
+    st.markdown(
+        '<div class="section-description">'
+        'Final Year Research Project'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
     st.markdown(
         """
-        <div class="intro-box">
+        <div class="student-name">
+        <strong>Bimalya Herath</strong> (24SFE037)<br>
+        <strong>Tharuka Hewawasam</strong> (24SFE031)<br><br>
 
-        <h3>Why did we conduct this research?</h3>
+        BSc Financial Engineering<br>
+        Department of Mathematics<br>
+        Faculty of Science<br>
+        University of Colombo
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-        Stock prices change continuously, making it difficult
-        to estimate how they may move in the future.
+    st.markdown("---")
 
-        Machine learning and deep learning offer different
-        ways of analysing historical market information
-        and identifying patterns that may help estimate
-        stock prices.
+    # --------------------------------------------------------
+    # WHY
+    # --------------------------------------------------------
 
-        However, using a more advanced model does not
-        automatically mean obtaining better predictions.
+    st.header("Why did we do this research?")
 
-        <br><br>
+    st.write(
+        """
+        Stock prices change continuously and can be difficult to
+        predict accurately. Historical market data may contain
+        patterns that can be used to estimate future prices.
+        """
+    )
 
-        <strong>
-        Our research investigates how accurately different
-        prediction approaches estimate stock prices and
-        whether advanced models outperform a simple baseline.
-        </strong>
+    st.write(
+        """
+        Machine learning and deep learning provide different
+        approaches for identifying these patterns. However,
+        a more complicated model does not automatically mean
+        a more accurate prediction.
+        """
+    )
+
+    st.markdown(
+        """
+        <div class="research-box">
+
+        <strong>Our research question</strong><br><br>
+
+        Can machine learning and deep learning models improve
+        stock price prediction compared with a simple baseline
+        approach?
 
         </div>
         """,
         unsafe_allow_html=True
     )
 
+    # --------------------------------------------------------
+    # WHAT
+    # --------------------------------------------------------
 
-    # RESEARCH QUESTION
+    st.header("What did we investigate?")
 
-    st.subheader("Our Main Research Question")
-
-    st.markdown(
+    st.write(
         """
-        Can machine learning and deep learning models
-        predict stock prices more accurately than a
-        simple baseline approach?
+        We compared different prediction approaches using
+        historical stock data for three large companies:
         """
     )
-
-
-    st.markdown("---")
-
-
-    # COMPANIES
-
-    st.subheader("Companies Included in Our Research")
 
     cols = st.columns(3)
 
     for col, stock in zip(cols, STOCKS):
 
-        price = historical[stock].dropna()
-
-        latest = price.iloc[-1]
-
         with col:
 
-            st.markdown(
-                f"""
-                <div class="research-box">
+            st.subheader(STOCK_NAMES[stock])
 
-                <h3>{get_stock_name(stock)}</h3>
-
-                <p class="muted">
-                Stock Symbol: {stock}
-                </p>
-
-                <h2>${latest:.2f}</h2>
-
-                <p class="muted">
-                Latest available closing price
-                </p>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            st.write(
+                f"Stock ticker: **{stock}**"
             )
 
+    # --------------------------------------------------------
+    # HOW
+    # --------------------------------------------------------
 
-    st.markdown("---")
-
-
-    # RESEARCH PROCESS
-
-    st.subheader("How Did We Conduct the Research?")
+    st.header("How did we do it?")
 
     steps = [
-
         (
-            "01. Data Collection",
-            "Collected historical stock market information "
-            "for the three selected companies."
+            "1. Collect the data",
+            "Historical stock market data was collected for "
+            "Apple, Microsoft and Tesla."
         ),
-
         (
-            "02. Data Preparation",
-            "Prepared the data and developed additional "
-            "features for prediction."
+            "2. Prepare the data",
+            "The data was cleaned and transformed into variables "
+            "that could be used by prediction models."
         ),
-
         (
-            "03. Model Development",
-            "Developed and evaluated seven different "
-            "prediction approaches."
+            "3. Train prediction models",
+            "Several machine learning and deep learning approaches "
+            "were trained using the prepared data."
         ),
-
         (
-            "04. Price Prediction",
-            "Generated estimated stock prices using "
-            "the developed models."
+            "4. Test the models",
+            "The models generated predictions for data that was "
+            "not used to train them."
         ),
-
         (
-            "05. Performance Evaluation",
-            "Compared the estimated prices with actual "
-            "prices using statistical evaluation metrics."
-        ),
-
-        (
-            "06. Research Findings",
-            "Identified the strongest-performing approaches "
-            "and interpreted the results."
+            "5. Compare the results",
+            "Predicted prices were compared with actual prices "
+            "using several performance measures."
         )
-
     ]
 
     for title, description in steps:
-
-        st.markdown(
-            f"""
-            <div class="finding-box">
-
-            <strong>{title}</strong>
-
-            <p>{description}</p>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-
-    st.markdown("---")
-
-
-    # RESEARCH SUMMARY
-
-    st.subheader("Research at a Glance")
-
-    c1, c2, c3 = st.columns(3)
-
-    c1.metric(
-        "Companies Analysed",
-        "3"
-    )
-
-    c2.metric(
-        "Prediction Approaches",
-        "7"
-    )
-
-    c3.metric(
-        "Research Area",
-        "Predictive Modelling"
-    )
-
-
-    st.info(
-        "Explore the sections of this dashboard to understand "
-        "the data, predictions, evaluation results and "
-        "conclusions of our research."
-    )
-
-
-# ==========================================================
-# 9. EXPLORE THE MARKET
-# ==========================================================
-
-elif page == "Explore the Market":
-
-    st.header("Explore Historical Stock Prices")
-
-    st.write(
-        "Select a company to explore how its stock price "
-        "has changed throughout the research period."
-    )
-
-
-    stock = st.selectbox(
-        "Select a company",
-        STOCKS,
-        format_func=get_stock_name
-    )
-
-
-    price = historical[stock].dropna()
-
-    stock_returns = returns[stock].dropna()
-
-
-    # PRICE SUMMARY
-
-    latest = price.iloc[-1]
-
-    previous = price.iloc[-2]
-
-    change = latest - previous
-
-    percentage = change / previous * 100
-
-
-    c1, c2, c3 = st.columns(3)
-
-    c1.metric(
-        "Latest Closing Price",
-        f"${latest:.2f}"
-    )
-
-    c2.metric(
-        "Previous Day's Change",
-        f"${change:.2f}",
-        f"{percentage:.2f}%"
-    )
-
-    c3.metric(
-        "Trading Days Available",
-        f"{len(price):,}"
-    )
-
-
-    st.markdown("---")
-
-
-    # HISTORICAL PRICE
-
-    st.subheader(
-        f"How Has {get_stock_name(stock)}'s Price Changed?"
-    )
-
-    st.write(
-        "This graph shows the recorded closing price "
-        "of the selected company over the research period."
-    )
-
-
-    fig = px.line(
-
-        x=price.index,
-
-        y=price.values,
-
-        labels={
-            "x": "Date",
-            "y": "Closing Price (USD)"
-        }
-
-    )
-
-    fig.update_layout(
-        template="plotly_white",
-        hovermode="x unified"
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-
-    # DAILY CHANGES
-
-    st.markdown("---")
-
-    st.subheader("Daily Stock Price Changes")
-
-    st.write(
-        "Stock prices can increase or decrease each trading day. "
-        "This graph shows the percentage change between "
-        "consecutive trading days."
-    )
-
-
-    fig = px.line(
-
-        x=stock_returns.index,
-
-        y=stock_returns.values * 100,
-
-        labels={
-            "x": "Date",
-            "y": "Daily Price Change (%)"
-        }
-
-    )
-
-    fig.add_hline(
-        y=0,
-        line_dash="dash"
-    )
-
-    fig.update_layout(
-        template="plotly_white"
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-
-    with st.expander("How should I understand this graph?"):
-
-        st.write(
-            """
-            Positive values indicate that the stock price
-            increased compared with the previous trading day.
-
-            Negative values indicate that the stock price
-            decreased.
-
-            Larger movements indicate greater daily
-            price fluctuations.
-            """
-        )
-
-
-# ==========================================================
-# 10. OUR PREDICTIONS
-# ==========================================================
-
-elif page == "Our Predictions":
-
-    st.header("What Did Our Models Predict?")
-
-    st.write(
-        """
-        We developed seven prediction approaches and used
-        them to estimate stock prices.
-
-        This section allows you to compare their estimates
-        with the actual stock market prices recorded during
-        the test period.
-        """
-    )
-
-
-    stock = st.selectbox(
-        "Select a company",
-        STOCKS,
-        format_func=get_stock_name
-    )
-
-
-    data = predictions[
-        predictions["Stock"] == stock
-    ].copy()
-
-    data = data.sort_values("Date")
-
-
-    available_models = [
-
-        model for model in MODELS
-
-        if model in data.columns
-
-    ]
-
-
-    selected_models = st.multiselect(
-
-        "Select prediction approaches to display",
-
-        available_models,
-
-        default=available_models
-
-    )
-
-
-    # ACTUAL VS PREDICTED
-
-    fig = go.Figure()
-
-
-    fig.add_trace(
-
-        go.Scatter(
-
-            x=data["Date"],
-
-            y=data["Actual"],
-
-            mode="lines",
-
-            name="Actual Market Price",
-
-            line=dict(width=4)
-
-        )
-
-    )
-
-
-    for model in selected_models:
-
-        fig.add_trace(
-
-            go.Scatter(
-
-                x=data["Date"],
-
-                y=data[model],
-
-                mode="lines",
-
-                name=model
-
-            )
-
-        )
-
-
-    fig.update_layout(
-
-        title=f"{get_stock_name(stock)}: Actual and Estimated Prices",
-
-        xaxis_title="Date",
-
-        yaxis_title="Stock Price (USD)",
-
-        hovermode="x unified",
-
-        template="plotly_white"
-
-    )
-
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-
-    st.markdown("---")
-
-
-    # EXPLANATION
-
-    st.subheader("Understanding the Graph")
-
-    st.markdown(
-        """
-        **Actual Market Price**
-
-        The actual closing price recorded in the stock market.
-
-        **Predicted Price**
-
-        The estimated closing price generated by a
-        prediction model.
-
-        **What should you look for?**
-
-        The closer a model's prediction line is to the
-        actual price line, the more closely its estimates
-        followed the recorded market prices.
-        """
-    )
-
-
-    st.markdown("---")
-
-
-    # MODEL EXPLANATIONS
-
-    st.subheader("How Do the Different Approaches Work?")
-
-
-    with st.expander("Learn about the seven prediction approaches"):
-
-        for model in available_models:
-
-            st.markdown(f"**{model}**")
-
-            st.write(
-                MODEL_DESCRIPTIONS[model]
-            )
-
-            st.markdown("---")
-
-
-    st.warning(
-        "These are estimates produced during the historical "
-        "test period. They should not be interpreted as "
-        "guaranteed future stock prices."
-    )
-
-
-# ==========================================================
-# 11. HOW ACCURATE WERE WE?
-# ==========================================================
-
-elif page == "How Accurate Were We?":
-
-    st.header("Evaluating Prediction Accuracy")
-
-    st.write(
-        """
-        A prediction is useful only if it is reasonably close
-        to the actual stock price.
-
-        We therefore compared the predictions from all
-        seven approaches against the actual prices to
-        identify their relative performance.
-        """
-    )
-
-
-    stock = st.selectbox(
-        "Select a company",
-        STOCKS,
-        format_func=get_stock_name
-    )
-
-
-    results = get_model_results(stock)
-
-
-    st.markdown("---")
-
-
-    # BEST MODEL
-
-    best = get_best_model(stock)
-
-
-    if best is not None:
-
-        st.markdown(
-            f"""
-            <div class="intro-box">
-
-            <h3>Best Performing Approach</h3>
-
-            <h2>{best}</h2>
-
-            This approach achieved the lowest test RMSE
-            among the approaches evaluated for
-            {get_stock_name(stock)}.
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-
-    # PERFORMANCE TABLE
-
-    st.subheader("Comparison of All Prediction Approaches")
-
-    st.write(
-        "The table shows how closely each approach "
-        "estimated the actual stock prices."
-    )
-
-
-    columns = [
-        "Model",
-        "MAE",
-        "RMSE",
-        "MAPE (%)",
-        "R2"
-    ]
-
-
-    st.dataframe(
-
-        results[columns].round(4),
-
-        use_container_width=True,
-
-        hide_index=True
-
-    )
-
-
-    st.markdown("---")
-
-
-    # RMSE CHART
-
-    st.subheader("Comparing Prediction Errors")
-
-    st.write(
-        """
-        RMSE measures the difference between predicted
-        and actual prices, while giving greater importance
-        to larger errors.
-
-        A smaller RMSE indicates better performance
-        under this evaluation measure.
-        """
-    )
-
-
-    fig = px.bar(
-
-        results.sort_values("RMSE"),
-
-        x="Model",
-
-        y="RMSE",
-
-        color="Model",
-
-        text="RMSE"
-
-    )
-
-
-    fig.update_layout(
-
-        template="plotly_white",
-
-        showlegend=False,
-
-        xaxis_title="Prediction Approach",
-
-        yaxis_title="RMSE (USD)"
-
-    )
-
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-
-    # METRIC EXPLANATION
-
-    st.markdown("---")
-
-    st.subheader("What Do These Measurements Mean?")
-
-
-    explanations = {
-
-        "MAE – Average Prediction Error":
-
-        """
-        Measures the average absolute difference between
-        predicted prices and actual prices.
-
-        It is expressed in USD. Smaller values indicate
-        more accurate predictions.
-        """,
-
-        "RMSE – Prediction Error":
-
-        """
-        Measures prediction errors while giving greater
-        importance to larger errors.
-
-        It is also expressed in USD. Smaller values
-        indicate better performance.
-        """,
-
-        "MAPE – Percentage Prediction Error":
-
-        """
-        Measures the average prediction error as a
-        percentage of actual prices.
-
-        Smaller values generally indicate better performance.
-        """,
-
-        "R² – Model Fit":
-
-        """
-        Measures how well the model explains variation
-        in actual prices.
-
-        Higher values generally indicate a better fit.
-        Negative values are possible and indicate poor
-        performance relative to a mean-based prediction.
-        """
-
-    }
-
-
-    for title, explanation in explanations.items():
-
-        with st.expander(title):
-
-            st.write(explanation)
-
-
-# ==========================================================
-# 12. WHAT DID WE DISCOVER?
-# ==========================================================
-
-elif page == "What Did We Discover?":
-
-    st.header("The Results of Our Research")
-
-    st.write(
-        """
-        After evaluating seven prediction approaches
-        across three companies, we identified several
-        important findings.
-        """
-    )
-
-
-    # FINDING 1
-
-    st.markdown(
-        """
-        <div class="finding-box">
-
-        <h3>1. The Simple Baseline Outperformed
-        the Advanced Models</h3>
-
-        The Naïve Persistence Baseline achieved the
-        lowest test RMSE across all three stocks.
-
-        This demonstrates that more complicated
-        prediction approaches do not necessarily
-        produce more accurate results.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-    # FINDING 2
-
-    st.markdown(
-        """
-        <div class="finding-box">
-
-        <h3>2. GRU Was the Strongest Advanced Approach</h3>
-
-        Among the six machine learning and deep learning
-        models, GRU demonstrated the strongest performance
-        in the test comparison.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-    # FINDING 3
-
-    st.markdown(
-        """
-        <div class="finding-box">
-
-        <h3>3. Model Performance Varied Between Companies</h3>
-
-        The prediction results were not identical
-        across Apple, Microsoft and Tesla.
-
-        This highlights the importance of evaluating
-        models separately for different stocks.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-    # FINDING 4
-
-    st.markdown(
-        """
-        <div class="finding-box">
-
-        <h3>4. Greater Complexity Did Not Guarantee
-        Better Accuracy</h3>
-
-        The results show that using more advanced
-        machine learning and deep learning architectures
-        does not automatically improve stock price
-        prediction performance.
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-    st.markdown("---")
-
-
-    # COMPLETE RESULTS
-
-    st.subheader("Complete Model Comparison Results")
-
-    st.write(
-        """
-        The following table presents the numerical
-        evaluation results for all three companies.
-        """
-    )
-
-
-    st.dataframe(
-
-        comparison.sort_values(
-            ["Stock", "RMSE"]
-        ).round(4),
-
-        use_container_width=True,
-
-        hide_index=True
-
-    )
-
-
-    st.markdown("---")
-
-
-    # BEST MODELS
-
-    st.subheader("Best Performing Approaches")
-
-    st.dataframe(
-        best_models,
-        use_container_width=True,
-        hide_index=True
-    )
-
-
-    # VALIDATION
-
-    st.markdown("---")
-
-    st.subheader("Model Validation Results")
-
-    st.write(
-        """
-        These results provide additional information
-        about model performance during the validation
-        stage of the research.
-        """
-    )
-
-
-    st.dataframe(
-        validation.round(4),
-        use_container_width=True,
-        hide_index=True
-    )
-
-
-    # FINAL CONCLUSION
-
-    st.markdown("---")
-
-    st.subheader("Overall Research Conclusion")
-
-
-    st.markdown(
-        """
-        Our research demonstrates that stock price
-        prediction performance depends on the selected
-        approach, the company being analysed and the
-        experimental setup.
-
-        Although advanced machine learning and deep
-        learning models can identify patterns in
-        historical market data, their increased
-        complexity does not necessarily translate
-        into better prediction accuracy.
-
-        The strong performance of the simple baseline
-        highlights the importance of comparing advanced
-        prediction models against appropriate benchmark
-        approaches.
-        """
-    )
-
-
-    st.info(
-        "These findings are specific to the selected "
-        "companies, historical dataset, features, "
-        "evaluation period and research methodology."
-    )
-
-
-# ==========================================================
-# 13. ABOUT THIS RESEARCH
-# ==========================================================
-
-elif page == "About This Research":
-
-    st.header("About Our Research Project")
-
-
-    # PROJECT TITLE
-
-    st.subheader("Project Title")
-
-    st.markdown(
-        f"### {PROJECT_TITLE}"
-    )
-
-
-    st.markdown("---")
-
-
-    # WHY
-
-    st.subheader("Why Was This Research Conducted?")
-
-    st.write(
-        """
-        Stock price prediction is a challenging task
-        because market prices change over time and
-        may contain complex patterns.
-
-        Different machine learning and deep learning
-        models offer different ways of analysing
-        historical market information.
-
-        However, it is important to determine whether
-        these advanced approaches actually provide
-        better predictions than simpler alternatives.
-
-        This research was therefore conducted to
-        systematically compare their prediction
-        performance.
-        """
-    )
-
-
-    # WHAT
-
-    st.markdown("---")
-
-    st.subheader("What Did We Investigate?")
-
-    st.write(
-        """
-        The research focuses on the comparative
-        evaluation of seven prediction approaches
-        across three selected companies.
-
-        The primary objective is to assess their
-        ability to estimate stock prices using
-        historical market data.
-        """
-    )
-
-
-    # HOW
-
-    st.markdown("---")
-
-    st.subheader("How Was the Research Conducted?")
-
-    methodology = [
-
-        (
-            "Data Collection",
-            "Historical stock market data for Apple, "
-            "Microsoft and Tesla."
-        ),
-
-        (
-            "Data Preparation",
-            "Preparation of historical observations "
-            "and development of relevant features."
-        ),
-
-        (
-            "Model Development",
-            "Implementation of machine learning and "
-            "deep learning prediction approaches."
-        ),
-
-        (
-            "Prediction",
-            "Generation of estimated stock prices "
-            "for the evaluation period."
-        ),
-
-        (
-            "Evaluation",
-            "Comparison using MAE, RMSE, MAPE and R²."
-        )
-
-    ]
-
-
-    for title, description in methodology:
 
         st.markdown(f"**{title}**")
 
         st.write(description)
 
+    # --------------------------------------------------------
+    # RESULTS
+    # --------------------------------------------------------
 
-    # WHEN
-
-    st.markdown("---")
-
-    st.subheader("Research Period")
-
-    st.write(
-        f"""
-        The available historical dataset covers the period
-        from {format_date(historical.index.min())}
-        to {format_date(historical.index.max())}.
-        """
-    )
-
-
-    st.caption(
-        "This represents the available historical data period, "
-        "not necessarily the full duration of the research project."
-    )
-
-
-    # WHO
-
-    st.markdown("---")
-
-    st.subheader("Research Team")
-
+    st.header("What did we find?")
 
     st.markdown(
         """
-        <div class="research-box">
+        <div class="finding-box">
 
-        <h3>Bimalya Herath</h3>
+        <strong>Main finding</strong><br><br>
 
-        Student ID: 24sfe037
+        The most important result of the research was that
+        <strong>greater model complexity did not necessarily
+        produce better prediction accuracy.</strong>
 
         </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-        <div class="research-box">
+    st.write(
+        """
+        The Naïve Persistence Baseline achieved the lowest
+        test RMSE across the three stocks.
 
-        <h3>Tharuka Hewawasam</h3>
+        Among the six machine learning and deep learning
+        approaches tested, GRU was the strongest performer
+        in the test comparison.
+        """
+    )
 
-        Student ID: 24sfe031
+    st.write(
+        """
+        Model performance also varied between companies,
+        showing that one prediction approach does not
+        necessarily work best for every stock.
+        """
+    )
+
+    # --------------------------------------------------------
+    # IMPORTANT NOTE
+    # --------------------------------------------------------
+
+    st.markdown(
+        """
+        <div class="warning-box">
+
+        <strong>Important</strong><br><br>
+
+        These results describe performance on the selected
+        stocks, dataset, features, evaluation period and
+        experimental setup. They should not be interpreted
+        as guaranteed future stock prices or investment advice.
 
         </div>
         """,
@@ -1389,81 +428,621 @@ elif page == "About This Research":
     )
 
 
-    # UNIVERSITY
+# ============================================================
+# THE DATA
+# ============================================================
 
-    st.markdown("---")
+elif page == "The Data":
 
-    st.subheader("Academic Affiliation")
+    st.title("The Data")
 
     st.markdown(
-        """
-        **Bachelor of Science in Financial Engineering**
-
-        Department of Mathematics
-
-        Faculty of Science
-
-        University of Colombo
-
-        Sri Lanka
-        """
+        '<div class="section-description">'
+        'What information did we use for the research?'
+        '</div>',
+        unsafe_allow_html=True
     )
 
+    st.header("Which stocks were analysed?")
 
-    # OUTPUT
+    stock_table = pd.DataFrame({
+        "Company": [
+            "Apple",
+            "Microsoft",
+            "Tesla"
+        ],
+        "Ticker": [
+            "AAPL",
+            "MSFT",
+            "TSLA"
+        ]
+    })
 
-    st.markdown("---")
+    st.dataframe(
+        stock_table,
+        use_container_width=True,
+        hide_index=True
+    )
 
-    st.subheader("What Did This Research Produce?")
+    st.header("What information did we use?")
 
     st.write(
         """
-        The final outputs of this research include:
+        The research uses historical stock market information.
+        The original price data was transformed into additional
+        variables that could help the models identify patterns.
+        """
+    )
 
-        - A prepared historical stock market dataset.
-        - An engineered dataset containing additional
-          predictive features.
-        - Seven developed stock price prediction approaches.
-        - Historical test-period price predictions.
-        - Comparative model evaluation results.
-        - Validation results.
-        - A comparative analysis of model performance.
-        - A research dashboard presenting the findings.
+    feature_explanations = pd.DataFrame({
+        "Variable": [
+            "Closing Price",
+            "Daily Return",
+            "5-Day Moving Average",
+            "10-Day Moving Average",
+            "20-Day Moving Average",
+            "10-Day Volatility"
+        ],
+        "Simple explanation": [
+            "The stock's closing price for a trading day.",
+            "The percentage change in price from the previous trading day.",
+            "The average closing price over the previous 5 trading days.",
+            "The average closing price over the previous 10 trading days.",
+            "The average closing price over the previous 20 trading days.",
+            "A measure of how much the stock price has been fluctuating recently."
+        ]
+    })
 
-        These outputs provide a structured comparison
-        of the prediction approaches investigated
-        in this study.
+    st.dataframe(
+        feature_explanations,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.header("Why were these variables used?")
+
+    st.write(
+        """
+        Stock prices contain information about recent price
+        movements and fluctuations. Moving averages can help
+        represent recent price trends, while daily returns
+        and volatility describe how the price has been changing.
         """
     )
 
 
-# ==========================================================
-# 14. FOOTER
-# ==========================================================
+# ============================================================
+# WHAT WE TESTED
+# ============================================================
+
+elif page == "What We Tested":
+
+    st.title("What We Tested")
+
+    st.markdown(
+        '<div class="section-description">'
+        'The prediction approaches used in the research'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.header("Prediction approaches")
+
+    models = {
+        "Naïve Persistence Baseline":
+            "Uses the most recent observed price as the prediction. "
+            "This provides a simple benchmark for judging whether "
+            "more advanced models actually improve prediction accuracy.",
+
+        "Random Forest":
+            "Uses multiple decision trees and combines their "
+            "predictions.",
+
+        "XGBoost":
+            "Uses a sequence of decision trees designed to improve "
+            "prediction performance.",
+
+        "SVR":
+            "Support Vector Regression, a machine learning method "
+            "that estimates a continuous value such as stock price.",
+
+        "LSTM":
+            "A deep learning model designed to learn patterns "
+            "from sequential data.",
+
+        "GRU":
+            "A recurrent deep learning model that learns patterns "
+            "from sequences while using a simpler structure than LSTM.",
+
+        "Transformer":
+            "A deep learning architecture that uses attention "
+            "mechanisms to identify relationships within sequential data."
+    }
+
+    for model, explanation in models.items():
+
+        st.subheader(model)
+
+        st.write(explanation)
+
+        st.markdown("---")
+
+    st.header("How were the models compared?")
+
+    st.write(
+        """
+        Each model produced stock price predictions for the
+        test period. These predictions were then compared with
+        the actual prices.
+        """
+    )
+
+    metrics = pd.DataFrame({
+        "Measure": [
+            "MAE",
+            "RMSE",
+            "MAPE",
+            "R²"
+        ],
+        "What it tells us": [
+            "The average size of the prediction error.",
+            "The size of prediction errors, with larger errors receiving greater weight.",
+            "The average prediction error expressed as a percentage.",
+            "How well the model explains variation in the actual prices."
+        ],
+        "Preferred result": [
+            "Lower",
+            "Lower",
+            "Lower",
+            "Higher"
+        ]
+    })
+
+    st.dataframe(
+        metrics,
+        use_container_width=True,
+        hide_index=True
+    )
+
+
+# ============================================================
+# RESULTS
+# ============================================================
+
+elif page == "Results":
+
+    st.title("Results")
+
+    st.markdown(
+        '<div class="section-description">'
+        'What did the models actually produce?'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    selected_stock = st.selectbox(
+        "Select a company",
+        STOCKS,
+        format_func=lambda x: STOCK_NAMES[x]
+    )
+
+    stock_results = comparison[
+        comparison["Stock"] == selected_stock
+    ].sort_values("RMSE")
+
+    # --------------------------------------------------------
+    # BEST MODEL
+    # --------------------------------------------------------
+
+    best = best_models[
+        best_models["Stock"] == selected_stock
+    ]
+
+    if not best.empty:
+
+        best_model = best.iloc[0]["Model"]
+
+        st.markdown(
+            f"""
+            <div class="finding-box">
+
+            <strong>Best test-performing approach for
+            {STOCK_NAMES[selected_stock]}</strong><br><br>
+
+            <span style="font-size:1.3rem;">
+            {best_model}
+            </span>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # --------------------------------------------------------
+    # TABLE
+    # --------------------------------------------------------
+
+    st.header("Prediction performance")
+
+    st.write(
+        """
+        The table below shows how closely each approach
+        predicted the actual stock price.
+        """
+    )
+
+    result_table = stock_results[
+        ["Model", "MAE", "RMSE", "MAPE (%)", "R2"]
+    ].copy()
+
+    result_table = result_table.round(4)
+
+    st.dataframe(
+        result_table,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    # --------------------------------------------------------
+    # RMSE
+    # --------------------------------------------------------
+
+    st.header("Prediction error")
+
+    st.write(
+        """
+        RMSE is one of the main measures used in this research.
+        A smaller RMSE means that the model's predictions were,
+        on average, closer to the actual prices, while giving
+        greater weight to larger errors.
+        """
+    )
+
+    rmse_fig = px.bar(
+        stock_results,
+        x="Model",
+        y="RMSE",
+        text="RMSE",
+        title=f"RMSE for {STOCK_NAMES[selected_stock]}"
+    )
+
+    rmse_fig.update_layout(
+        template="plotly_white",
+        showlegend=False,
+        xaxis_title="Prediction Approach",
+        yaxis_title="RMSE"
+    )
+
+    st.plotly_chart(
+        rmse_fig,
+        use_container_width=True
+    )
+
+    # --------------------------------------------------------
+    # ACTUAL VS PREDICTED
+    # --------------------------------------------------------
+
+    st.header("Actual price compared with predictions")
+
+    stock_predictions = predictions[
+        predictions["Stock"] == selected_stock
+    ].sort_values("Date")
+
+    available_models = [
+        model for model in [
+            "Naive Baseline",
+            "Random Forest",
+            "XGBoost",
+            "SVR",
+            "LSTM",
+            "GRU",
+            "Transformer"
+        ]
+        if model in stock_predictions.columns
+    ]
+
+    selected_models = st.multiselect(
+        "Select prediction approaches",
+        available_models,
+        default=available_models
+    )
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=stock_predictions["Date"],
+            y=stock_predictions["Actual"],
+            mode="lines",
+            name="Actual Price",
+            line=dict(width=3)
+        )
+    )
+
+    for model in selected_models:
+
+        fig.add_trace(
+            go.Scatter(
+                x=stock_predictions["Date"],
+                y=stock_predictions[model],
+                mode="lines",
+                name=model
+            )
+        )
+
+    fig.update_layout(
+        title=f"{STOCK_NAMES[selected_stock]}: Actual Price vs Predictions",
+        xaxis_title="Date",
+        yaxis_title="Closing Price (USD)",
+        hovermode="x unified",
+        template="plotly_white"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+
+# ============================================================
+# STOCK BEHAVIOUR
+# ============================================================
+
+elif page == "Stock Behaviour":
+
+    st.title("Stock Behaviour")
+
+    st.markdown(
+        '<div class="section-description">'
+        'Understanding how the three stocks changed over time'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    selected_stock = st.selectbox(
+        "Select a company",
+        STOCKS,
+        format_func=lambda x: STOCK_NAMES[x]
+    )
+
+    prices = historical[selected_stock].dropna()
+
+    latest = prices.iloc[-1]
+
+    previous = prices.iloc[-2]
+
+    change = latest - previous
+
+    percentage = (change / previous) * 100
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric(
+        "Latest closing price",
+        f"${latest:.2f}"
+    )
+
+    col2.metric(
+        "Change from previous day",
+        f"${change:.2f}",
+        f"{percentage:.2f}%"
+    )
+
+    col3.metric(
+        "Trading days in dataset",
+        f"{len(prices):,}"
+    )
+
+    st.header("Historical price")
+
+    price_fig = px.line(
+        x=prices.index,
+        y=prices.values,
+        title=f"{STOCK_NAMES[selected_stock]} Historical Closing Price",
+        labels={
+            "x": "Date",
+            "y": "Closing Price (USD)"
+        }
+    )
+
+    price_fig.update_layout(
+        template="plotly_white"
+    )
+
+    st.plotly_chart(
+        price_fig,
+        use_container_width=True
+    )
+
+    st.header("Daily price changes")
+
+    stock_returns = returns[selected_stock].dropna()
+
+    return_fig = px.line(
+        x=stock_returns.index,
+        y=stock_returns.values * 100,
+        title="Daily Percentage Price Changes",
+        labels={
+            "x": "Date",
+            "y": "Daily Change (%)"
+        }
+    )
+
+    return_fig.add_hline(
+        y=0,
+        line_dash="dash"
+    )
+
+    return_fig.update_layout(
+        template="plotly_white"
+    )
+
+    st.plotly_chart(
+        return_fig,
+        use_container_width=True
+    )
+
+    st.header("Historical volatility")
+
+    stock_features = features[
+        features["Stock"] == selected_stock
+    ]
+
+    volatility_fig = px.line(
+        stock_features,
+        x="Date",
+        y="Volatility_10",
+        title="10-Day Historical Volatility",
+        labels={
+            "Date": "Date",
+            "Volatility_10": "Volatility"
+        }
+    )
+
+    volatility_fig.update_layout(
+        template="plotly_white"
+    )
+
+    st.plotly_chart(
+        volatility_fig,
+        use_container_width=True
+    )
+
+    st.markdown(
+        """
+        <div class="warning-box">
+
+        <strong>How should volatility be understood?</strong><br><br>
+
+        Volatility describes how much prices have fluctuated
+        historically. Higher volatility means larger price
+        movements. It does not tell us exactly what will happen
+        to the stock in the future.
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+# ============================================================
+# RESEARCH CONCLUSION
+# ============================================================
+
+elif page == "Research Conclusion":
+
+    st.title("Research Conclusion")
+
+    st.markdown(
+        '<div class="section-description">'
+        'What do the results tell us?'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.header("Main findings")
+
+    st.markdown(
+        """
+        **1. The simple baseline was difficult to beat.**
+
+        The Naïve Persistence Baseline achieved the lowest
+        test RMSE across all three stocks.
+
+        **2. GRU was the strongest advanced approach.**
+
+        Among the six machine learning and deep learning
+        approaches, GRU produced the strongest overall
+        test performance in our comparison.
+
+        **3. Model performance depended on the stock.**
+
+        The same approach did not necessarily perform
+        equally well across Apple, Microsoft and Tesla.
+
+        **4. More complex does not necessarily mean better.**
+
+        The results do not support the assumption that
+        increasingly complex models will automatically
+        produce more accurate stock price predictions.
+        """
+    )
+
+    st.header("What did we learn?")
+
+    st.write(
+        """
+        The main lesson from this research is that model
+        selection should be based on actual performance
+        rather than complexity alone.
+        """
+    )
+
+    st.write(
+        """
+        A sophisticated deep learning model may be useful,
+        but it should always be evaluated against an appropriate
+        baseline. In our experiment, the simple persistence
+        approach provided a very strong benchmark.
+        """
+    )
+
+    st.header("Why is this important?")
+
+    st.write(
+        """
+        The purpose of this project was not simply to build
+        the most complicated prediction model.
+
+        The purpose was to investigate whether different
+        modelling approaches could provide more accurate
+        stock price predictions and to determine which
+        approaches performed best under our experimental
+        conditions.
+        """
+    )
+
+    st.markdown(
+        """
+        <div class="finding-box">
+
+        <strong>Final conclusion</strong><br><br>
+
+        Our findings show that stock price prediction remains
+        challenging. Advanced machine learning and deep learning
+        models can provide useful predictions, but greater
+        complexity does not guarantee improved accuracy.
+
+        The results therefore support the importance of
+        benchmarking advanced models against simple baseline
+        approaches.
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.header("Scope of the findings")
+
+    st.write(
+        """
+        These conclusions apply specifically to the selected
+        stocks, historical dataset, engineered features,
+        prediction methods, evaluation period and experimental
+        methodology used in this research.
+
+        The predictions should not be interpreted as guaranteed
+        future stock prices or as investment recommendations.
+        """)
+
+
+# ============================================================
+# FOOTER
+# ============================================================
 
 st.markdown("---")
 
-st.markdown(
-    """
-    <div style="text-align:center;">
-
-    <p><strong>Stock Market Price Prediction for
-    Data-Driven Decision Support</strong></p>
-
-    <p>
-    Final Year Research Project<br>
-    BSc Financial Engineering<br>
-    Department of Mathematics<br>
-    Faculty of Science<br>
-    University of Colombo
-    </p>
-
-    <p class="muted">
-    Bimalya Herath (24sfe037) |
-    Tharuka Hewawasam (24sfe031)
-    </p>
-
-    </div>
-    """,
-    unsafe_allow_html=True
+st.caption(
+    "Stock Price Prediction for Data-Driven Decision Support | "
+    "Final Year Research Project | University of Colombo"
 )
